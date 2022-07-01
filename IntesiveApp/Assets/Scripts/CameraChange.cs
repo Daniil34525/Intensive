@@ -4,89 +4,104 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Drawing; 
 
-public class CameraChange : MonoBehaviour, IPointerClickHandler
+public class CameraChange : MonoBehaviour
 {
+    public DateAndInfo dateAndInfo; // Второй скрипт с картинками и текстами.
+
+    #region Доступные поля класса
     // Поля класса, виды в Unity:
-    public GameObject camera_main;      // Камера сцены.
-    public GameObject camera_object;    // Камера на объект с канвасом.
-    public GameObject camera_rotative;  // Камера на пустой объект (вращающаяся).
-    public GameObject emptyObject;      // Пустой объект, за которым закреплена камера.
+    public Camera mainCamera;      // Камера сцены.
+    public Camera forObjectCamera; // Камера на объект с канвасом.
+    public Camera rotativeCamera;  // Камера на пустой объект (вращающаяся).
+    public GameObject emptyObject; // Пустой объект, за которым закреплена камера.
+    public Text objectInfo;        // Поле с тексом по объекту.
+    public Image objectSprite;     // Поле с изображением по объекту.
+    public Canvas canvasWithRegions; 
+    #endregion
 
     private Quaternion startAngles;     // Хранит начальные углы поворота.
-    private bool flag = false;          // Флаг для поворота.
+    private bool rotationFlag = false;  // Флаг для поворота.
 
-    public Text information;
-    public Image picture; 
-
-    private static string pathForTxt = @"Assets\Information\";
-
-    public Sprite tower;
-    public Sprite guardHouse;
-    public Sprite homeBorsheva;
-    public Sprite besedka;
-
-    public void OnPointerClick(PointerEventData eventData)
+    public void OnMouseDown()
     {
-        Debug.Log(gameObject.tag + ".txt"); 
-
-        information.text = File.ReadAllText(pathForTxt + gameObject.tag + ".txt");
-
+        // В зависими от тега объекта, по которому мы нажали:
         switch (gameObject.tag)
         {
             case "Tower":
-                picture.sprite = tower;
+                objectSprite.sprite = dateAndInfo.SpriteForTower;
+                objectInfo.text = dateAndInfo.TowerInfo.text; 
                 break;
             case "HomeBorsheva":
-                picture.sprite = homeBorsheva;
+                objectSprite.sprite = dateAndInfo.SpriteForHomeBorheva;
+                objectInfo.text =dateAndInfo.HomeBorshevaInfo.text;
                 break;
             case "GuardHouse":
-                picture.sprite = guardHouse;
+                objectSprite.sprite = dateAndInfo.SpriteForGuardHouse;
+                objectInfo.text = dateAndInfo.GuardHouseInfo.text;
                 break;
             case "Besedka":
-                picture.sprite = besedka;
+                objectSprite.sprite = dateAndInfo.SpriteForBesedka;
+                objectInfo.text = dateAndInfo.BesedkaInfo.text;
+                break;
+            case "Ostrov":
+                objectSprite.sprite = dateAndInfo.SpriteForOstrov;
+                objectInfo.text = dateAndInfo.OstrovInfo.text;
                 break;
         }
-        
-        if (camera_main.activeSelf)
+
+        // Если камера сцены сейчас включена: 
+        if (mainCamera.enabled)
         {
-            camera_main.SetActive(false); // Отключение камеры на сцену.
-            camera_object.SetActive(true); // Включение камеры на объект с канвасом.
-
-            startAngles = transform.rotation;  // Берем углы поворота объекта, на который нажали.
-            // Высталение пустого объекта:
-            emptyObject.transform.rotation = startAngles; // Выставляем полученные угла на пустой объект.
-            // Задаем позицию для пустого объекта такую же, как и у объекта на который нажали.
-            emptyObject.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-            // Камера на пустой объект будет выставлена автоматически.
-
-            // Выставляем камеру с конвасом на объект по мировым координатам камеры, которая направлена на пустой объект.
-            camera_object.transform.rotation = camera_rotative.transform.rotation;
-            camera_object.transform.position = camera_rotative.transform.position;
-            return; 
+            SwitchToSupportCam();
+            return;
         }
-        if (!flag) 
-        { 
-            flag = !flag;
-            camera_object.SetActive(!camera_object.activeSelf); 
-            camera_rotative.SetActive(!camera_rotative.activeSelf);
-            Debug.Log("Start Rotation"); 
+
+        if (!rotationFlag)
+        {
+            rotationFlag = !rotationFlag; // Меняем флаг на true.
+            forObjectCamera.enabled = !forObjectCamera.enabled; // Отключение камеры с конвасом на объект.
+            rotativeCamera.enabled = !rotativeCamera.enabled;  // Включение камеры кращения.
         }
         else
         {
-            flag = !flag;
-            camera_object.SetActive(!camera_object.activeSelf);
-            camera_rotative.SetActive(!camera_rotative.activeSelf); 
-            emptyObject.transform.rotation = startAngles;   
-            Debug.Log("Stop rotation!");
+            rotationFlag = !rotationFlag; // Меняем флаг на false.
+            forObjectCamera.enabled = !forObjectCamera.enabled; // Включение камера на объект с канвасом.
+            rotativeCamera.enabled = !rotativeCamera.enabled; // Отключение камеры вращения. 
+            emptyObject.transform.rotation = startAngles;
         }
     }
 
-    private void Update() { if (flag) emptyObject.transform.Rotate(0, -25 * Time.deltaTime, 0); }
+    private void Update() { if (rotationFlag) emptyObject.transform.Rotate(0, -15 * Time.deltaTime, 0); }
+    
+    private void SwitchToSupportCam()
+    {
+        mainCamera.enabled = !mainCamera.enabled; // Отключение камеры на сцену.
+        canvasWithRegions.enabled = !canvasWithRegions.enabled;
+        forObjectCamera.enabled = !forObjectCamera.enabled; // Включение камера на объект с канвасом.
+       
+        ExposeTheRotativeObject(); // Вызов метода для выставление пустого объекта на сцене.
 
+        // Позиция и углы поворота камеры вращения автоматически выставлены относительно пустого объекта.
+        forObjectCamera.transform.SetPositionAndRotation(
+            rotativeCamera.transform.position,  // Позиция камеры на объект = позиция камеры вращения.
+            rotativeCamera.transform.rotation); // Углы поворота камеры на объекта = углы поворота камеры вращения.
+    }
+
+    private void ExposeTheRotativeObject()
+    {
+        startAngles = transform.rotation; // Берем углы поворота объекта, на который нажали. 
+        
+        // Задаем позицию для пустого объекта такую же, как и у объекта на который нажали.
+        // Углы поворота берем такие же, как и у объекта на сцене, на который мы нажали. 
+        emptyObject.transform.SetPositionAndRotation(
+            new Vector3(transform.position.x, transform.position.y, transform.position.z), // Установка позиции.
+            startAngles);                                                                  // Установка углов поворота.
+    }
     public void Exit() // Для выхода на камеру сцены.
     {
-        camera_rotative.SetActive(false);  
-        camera_object.SetActive(false);
-        camera_main.SetActive(true); 
+        rotativeCamera.enabled = false;
+        forObjectCamera.enabled = false;
+        mainCamera.enabled = true;
+        canvasWithRegions.enabled = true; 
     }
 }

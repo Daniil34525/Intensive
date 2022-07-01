@@ -1,0 +1,27 @@
+# Blender MTL File: 'teatr_Ostrovskogo.blend'
+# Material Count: 2
+
+newmtl Listva
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\Artem\\Downloads\\564-5640142_leaf-apple-high-definition-tel.png
+map_d C:\\Users\\Artem\\Downloads\\564-5640142_leaf-apple-high-definition-tel.png
+
+newmtl Stvol.001
+Ns 250.000000
+Ka 0.031818 0.031818 0.031818
+Kd 0.074034 0.036808 0.027196
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump C:\\Users\\User\\Documents\\Blender Projects\\Blender\\PBR Textures\\Bark 2\\Bark007_2K_Normal.jpg
+map_Kd C:\\Users\\Artem\\Downloads\\bark008.jpg
+map_Ns C:\\Users\\Artem\\Downloads\\bark008.jpg

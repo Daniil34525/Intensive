@@ -8,6 +8,8 @@ TagManager:
   - Tower
   - HomeBorsheva
   - Besedka
+  - TheaterOstrovskiy
+  - Ostrov
   layers:
   - Default
   - TransparentFX
